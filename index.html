@@ -168,7 +168,7 @@ function render(){
     });
   }
   $("cnt").textContent=pres.length+(pres.length===1?" pessoa":" pessoas");
-  $("go").disabled = pres.length<2 || animating;
+  $("go").disabled = pres.length<1 || animating;
 
   if(!isHost && me){
     const st=$("meStatus");
@@ -256,7 +256,7 @@ $("hostForm").addEventListener("submit",e=>{
   else { m.className="msg err"; m.textContent = r==="dup"?"Essa pessoa já está na sala.": r==="wait"?"Aguarde conectar.":"Chave inválida."; }
 });
 $("go").addEventListener("click",()=>{
-  const pres=estado.presentes; if(pres.length<2||animating) return;
+  const pres=estado.presentes; if(pres.length<1||animating) return;
   const w=pres[rand(pres.length)];
   const r={ num:w.n, nome:w.nome||"", pool:pres.map(p=>"Nº "+p.n+" · "+(p.nome||("Participante "+p.n))), drawId:Date.now()+"-"+rand(1e6) };
   lastDrawId=r.drawId; estado.resultado=r; animate(r); publish();
