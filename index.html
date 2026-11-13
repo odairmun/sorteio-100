@@ -40,6 +40,13 @@
   .drum.spin{color:var(--muted)}
   .drum.win{color:var(--gold);animation:pop .5s ease}
   @keyframes pop{0%{transform:scale(.7);opacity:.2}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  li.winner{background:linear-gradient(135deg,rgba(250,204,21,.25),rgba(245,158,11,.18));border:2px solid var(--gold);box-shadow:0 0 18px rgba(250,204,21,.35)}
+  li.winner .n{background:var(--gold);color:#2a1a00}
+  li.winner .who{color:var(--gold)}
+  .banner{text-align:center;padding:22px 16px;border-radius:16px;margin-top:14px;background:linear-gradient(135deg,#facc15,#f59e0b);color:#2a1a00;box-shadow:0 8px 30px rgba(250,204,21,.35);animation:pop .6s ease}
+  .banner .t{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.8}
+  .banner .w{font-size:clamp(28px,8vw,44px);font-weight:800;line-height:1.15;margin:6px 0 2px;word-break:break-word}
+  .banner .s{font-size:15px;font-weight:600}
   .youwon{font-size:22px;font-weight:800;color:var(--accent);margin-top:6px}
   .big{font-size:18px;padding:16px 30px;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#2a1a00;width:100%}
   .big:disabled{opacity:.4;cursor:not-allowed}
@@ -96,6 +103,12 @@
       </form>
       <div id="hMsg" class="msg"></div>
     </section>
+
+    <div id="banner" class="banner hidden">
+      <div class="t">🏆 Resultado do sorteio 🏆</div>
+      <div class="w" id="bName"></div>
+      <div class="s" id="bSub"></div>
+    </div>
 
     <section class="card">
       <h2>Na sala <span class="tag" id="cnt">0</span></h2>
@@ -162,8 +175,10 @@ function render(){
     ul.style.display="grid";
     pres.forEach(p=>{
       const li=document.createElement("li"); if(me && p.n===me.n) li.classList.add("mine");
+      const won = !animating && estado.resultado && estado.resultado.num===p.n;
+      if(won) li.classList.add("winner");
       const b=document.createElement("div"); b.className="n"; b.textContent=p.n;
-      const w=document.createElement("div"); w.className="who"; w.textContent=(p.nome||("Participante "+p.n))+(me&&p.n===me.n?" (você)":"");
+      const w=document.createElement("div"); w.className="who"; w.textContent=(won?"🏆 ":"")+(p.nome||("Participante "+p.n))+(me&&p.n===me.n?" (você)":"");
       li.append(b,w); ul.append(li);
     });
   }
@@ -180,6 +195,8 @@ function render(){
     if(r){ $("drum").textContent="🏆 Nº "+r.num+" · "+(r.nome||("Participante "+r.num)); $("drum").className="drum win"; $("go").textContent="Sortear novamente"; }
     else { $("drum").textContent="Aguardando o sorteio…"; $("drum").className="drum"; $("go").textContent="Sortear agora"; }
     $("youwon").classList.toggle("hidden", !(r && me && r.num===me.n));
+    $("banner").classList.toggle("hidden", !r);
+    if(r){ $("bName").textContent=(r.nome||("Participante "+r.num)); $("bSub").textContent = (me && r.num===me.n) ? "🎉 É VOCÊ! Parabéns! 🎉" : "Ganhou os R$ 100! Parabéns! 🎉"; }
   }
 }
 function showRoom(){
@@ -196,7 +213,7 @@ function showRoom(){
 function setConn(on){ $("dot").classList.toggle("on",on); $("conn").textContent = on ? "Conectado ao vivo" : "Reconectando…"; }
 
 function animate(r){
-  animating=true; render(); $("youwon").classList.add("hidden");
+  animating=true; render(); $("youwon").classList.add("hidden"); $("banner").classList.add("hidden");
   const pool=(r.pool&&r.pool.length)?r.pool:["Nº "+r.num];
   const drum=$("drum"); drum.className="drum spin";
   let t=0,delay=50,i=0;
