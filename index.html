@@ -98,7 +98,7 @@
     </section>
 
     <section class="card">
-      <h2>Na sala <span class="tag" id="cnt">0 de 13</span></h2>
+      <h2>Na sala <span class="tag" id="cnt">0</span></h2>
       <ul id="list"></ul>
     </section>
 
@@ -167,7 +167,7 @@ function render(){
       li.append(b,w); ul.append(li);
     });
   }
-  $("cnt").textContent=pres.length+" de "+TOTAL;
+  $("cnt").textContent=pres.length+(pres.length===1?" pessoa":" pessoas");
   $("go").disabled = pres.length<2 || animating;
 
   if(!isHost && me){
