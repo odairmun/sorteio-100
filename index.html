@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sala do Sorteio – R$ 100</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1220;--card:#181c30;--line:#2a2f4a;--text:#eef0f8;--muted:#9aa0bd;--accent:#22c55e;--gold:#facc15;--bad:#f87171}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(1200px 600px at 50% -200px,#1d2550,transparent),var(--bg);color:var(--text);min-height:100vh}
+  .wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px}
+  header{text-align:center;margin-bottom:18px}
+  .badge{display:inline-block;background:rgba(34,197,94,.12);color:var(--accent);border:1px solid rgba(34,197,94,.35);padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600}
+  h1{font-size:clamp(30px,7vw,44px);margin:10px 0 4px;font-weight:800;letter-spacing:-.5px}
+  h1 span{color:var(--gold)}
+  .sub{color:var(--muted);margin:0;font-size:15px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
+  .card h2{font-size:16px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  form{display:grid;gap:10px}
+  input{background:#0f1325;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:13px 14px;font-size:16px;font-family:inherit;width:100%}
+  input:focus{outline:2px solid var(--accent);border-color:transparent}
+  .keyin{text-transform:uppercase;letter-spacing:3px;font-weight:700;text-align:center;font-size:20px}
+  button{font-family:inherit;font-size:16px;font-weight:700;border:0;border-radius:10px;padding:13px 18px;cursor:pointer}
+  .btn{background:var(--accent);color:#06210f}
+  .ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:600;font-size:13px;padding:9px 12px}
+  .msg{min-height:20px;margin-top:8px;font-size:14px;text-align:center}
+  .msg.err{color:var(--bad)} .msg.ok{color:var(--accent)}
+  .me{text-align:center;padding:16px;border-radius:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.35)}
+  .me .num{font-size:40px;font-weight:800;color:var(--accent);line-height:1.15}
+  .me .lbl{font-size:14px;color:var(--muted)}
+  ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  li{background:#0f1325;border:1px solid var(--line);border-radius:10px;padding:9px 11px;display:flex;gap:9px;align-items:center;font-size:14px;animation:pop .35s ease}
+  li.mine{border-color:var(--accent)}
+  li .n{width:26px;height:26px;border-radius:50%;background:#262c4a;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);flex:none}
+  li .who{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:12px}
+  .stage{text-align:center}
+  .drum{font-size:clamp(24px,7vw,38px);font-weight:800;min-height:64px;display:grid;place-items:center;margin:6px 0 8px}
+  .drum.spin{color:var(--muted)}
+  .drum.win{color:var(--gold);animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(.7);opacity:.2}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  .youwon{font-size:22px;font-weight:800;color:var(--accent);margin-top:6px}
+  .big{font-size:18px;padding:16px 30px;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#2a1a00;width:100%}
+  .big:disabled{opacity:.4;cursor:not-allowed}
+  .host{border-color:#3b4370}
+  .tag{font-size:12px;background:#262c4a;color:var(--muted);padding:3px 9px;border-radius:999px;font-weight:600}
+  .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .two{grid-template-columns:1fr 1fr auto}
+  @media(max-width:520px){.two{grid-template-columns:1fr}}
+  .hidden{display:none!important}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;padding:20px;z-index:10}
+  .modal.show{display:grid}
+  .modal .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:340px;text-align:center}
+  .confetti{position:fixed;top:-10px;width:9px;height:14px;border-radius:2px;pointer-events:none;animation:fall linear forwards;z-index:5}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px}
+  .dot.on{background:var(--accent)}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Sala virtual · ao vivo</span>
+    <h1>Sorteio de <span>R$ 100</span></h1>
+    <p class="sub" id="sub">Digite a chave que você recebeu por e-mail.</p>
+  </header>
+
+  <section class="card" id="gate">
+    <h2>Entrar na sala</h2>
+    <form id="gateForm" autocomplete="off">
+      <input id="gKey" class="keyin" placeholder="XXX-XXX" maxlength="9" required>
+      <input id="gName" placeholder="Seu nome" maxlength="30" required>
+      <button class="btn" type="submit">Entrar</button>
+    </form>
+    <div id="gMsg" class="msg"></div>
+  </section>
+
+  <div id="room" class="hidden">
+    <section class="card hidden" id="meCard">
+      <div class="me">
+        <div class="lbl">Olá, <b id="myName"></b>! Seu número da sorte é</div>
+        <div class="num" id="myNum">—</div>
+        <div class="lbl" id="meStatus">Entrando na sala…</div>
+      </div>
+    </section>
+
+    <section class="card host hidden" id="hostPanel">
+      <h2>Painel do organizador <span class="tag">só você vê</span></h2>
+      <p class="sub" style="font-size:13px;margin-bottom:10px">Quem digita a chave entra sozinho na lista. Se precisar, adicione alguém manualmente:</p>
+      <form id="hostForm" class="two" autocomplete="off">
+        <input id="hKey" class="keyin" style="font-size:16px" placeholder="Chave" maxlength="9" required>
+        <input id="hName" placeholder="Nome" maxlength="30">
+        <button class="btn" type="submit">Adicionar</button>
+      </form>
+      <div id="hMsg" class="msg"></div>
+    </section>
+
+    <section class="card">
+      <h2>Na sala <span class="tag" id="cnt">0 de 13</span></h2>
+      <ul id="list"></ul>
+    </section>
+
+    <section class="card stage">
+      <h2 style="justify-content:center">Sorteio</h2>
+      <div id="drum" class="drum">Aguardando o sorteio…</div>
+      <div id="youwon" class="youwon hidden">🎉 VOCÊ GANHOU! 🎉</div>
+      <div id="hostDraw" class="hidden" style="margin-top:12px">
+        <button id="go" class="btn big" disabled>Sortear agora</button>
+        <div class="row"><button id="reset" class="ghost">Apagar resultado</button><button id="resetAll" class="ghost">Esvaziar sala</button></div>
+      </div>
+    </section>
+  </div>
+
+  <footer><span class="dot" id="dot"></span><span id="conn">Conectando…</span><br>Sorteio com aleatoriedade criptográfica. Todos veem o mesmo resultado ao vivo.</footer>
+</div>
+
+<div id="modal" class="modal"><div class="box">
+  <p style="margin-top:0" id="mText"></p>
+  <div class="row"><button id="no" class="ghost">Cancelar</button><button id="yes" class="btn">Confirmar</button></div>
+</div></div>
+
+<script>
+const HASHES = ["26y0jdgj9sv","1bslhdr99gx","1pae7qkz8j0","zkegqt7e78","1huozum7g1n","2d9qdraxdsj","1q5bd8t91dw","1bxfzgslzbj","1nxam3n5svx","24c1ys1thhp","1yoaw86k476","2a5deqlsj1e","22fxiamixmn"];
+const ORGH = "6nbodag8w";
+const TOTAL = HASHES.length;
+const BASE = "https://ntfy.sh/";
+const T_IN = "sorteio100-qrmkgdelc9upi4-in";
+const T_ST = "sorteio100-qrmkgdelc9upi4-st";
+
+const cyrb53=(str,seed=0)=>{let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);};
+const norm = v => { let s=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,""); if(s.length===6) s=s.slice(0,3)+"-"+s.slice(3); return s; };
+const numOf = k => HASHES.indexOf(cyrb53("sorteio100|"+norm(k),7)) + 1;
+const clean = s => String(s||"").replace(/[\u0000-\u001f]/g,"").trim().slice(0,30);
+const $ = id => document.getElementById(id);
+const ls = { get(k){ try{return localStorage.getItem(k);}catch(e){return null;} }, set(k,v){ try{localStorage.setItem(k,v);}catch(e){} } };
+
+// ---- quem sou eu ----
+let isHost = false;
+const hm = location.hash.match(/^#org=([a-z0-9]+)/);
+if (hm && cyrb53("org|"+hm[1],7)===ORGH){ isHost=true; ls.set("s100_org","1"); history.replaceState(null,"",location.pathname); }
+else if (ls.get("s100_org")==="1") isHost=true;
+
+let me = null; // {k, nome, n}
+try { const m = JSON.parse(ls.get("s100_me")); if (m && numOf(m.k)) me = { k:norm(m.k), nome:clean(m.nome), n:numOf(m.k) }; } catch(e){}
+
+let estado = { presentes:[], resultado:null, ts:0, resetAt:0 };
+let lastDrawId; let animating=false; let loaded=false;
+
+["gKey","hKey"].forEach(id=>$(id).addEventListener("input",e=>e.target.value=e.target.value.toUpperCase()));
+
+const nomeDe = n => { const p=(estado.presentes||[]).find(x=>x.n===n); return (p && p.nome) || ("Participante "+n); };
+const isIn = n => (estado.presentes||[]).some(x=>x.n===n);
+
+// ---- tela ----
+function render(){
+  const ul=$("list"); ul.innerHTML="";
+  const pres=(estado.presentes||[]);
+  if(!pres.length){ ul.style.display="block"; ul.innerHTML='<div class="empty">Ninguém entrou ainda.</div>'; }
+  else {
+    ul.style.display="grid";
+    pres.forEach(p=>{
+      const li=document.createElement("li"); if(me && p.n===me.n) li.classList.add("mine");
+      const b=document.createElement("div"); b.className="n"; b.textContent=p.n;
+      const w=document.createElement("div"); w.className="who"; w.textContent=(p.nome||("Participante "+p.n))+(me&&p.n===me.n?" (você)":"");
+      li.append(b,w); ul.append(li);
+    });
+  }
+  $("cnt").textContent=pres.length+" de "+TOTAL;
+  $("go").disabled = pres.length<2 || animating;
+
+  if(!isHost && me){
+    const st=$("meStatus");
+    if(isIn(me.n)){ st.textContent="✔ Você está na sala! Fique nesta página: o sorteio aparece aqui ao vivo."; st.style.color="var(--accent)"; }
+    else { st.textContent="Entrando na sala…"; st.style.color=""; }
+  }
+  if(!animating){
+    const r=estado.resultado;
+    if(r){ $("drum").textContent="🏆 Nº "+r.num+" · "+(r.nome||("Participante "+r.num)); $("drum").className="drum win"; $("go").textContent="Sortear novamente"; }
+    else { $("drum").textContent="Aguardando o sorteio…"; $("drum").className="drum"; $("go").textContent="Sortear agora"; }
+    $("youwon").classList.toggle("hidden", !(r && me && r.num===me.n));
+  }
+}
+function showRoom(){
+  $("gate").classList.add("hidden"); $("room").classList.remove("hidden");
+  if(isHost){
+    $("sub").textContent="Você é o organizador. Os participantes acompanham tudo ao vivo.";
+    $("hostPanel").classList.remove("hidden"); $("hostDraw").classList.remove("hidden");
+  } else {
+    $("sub").textContent="Acompanhe ao vivo. O resultado aparece aqui para todos.";
+    $("meCard").classList.remove("hidden"); $("myNum").textContent="Nº "+me.n; $("myName").textContent=me.nome;
+  }
+  render();
+}
+function setConn(on){ $("dot").classList.toggle("on",on); $("conn").textContent = on ? "Conectado ao vivo" : "Reconectando…"; }
+
+function animate(r){
+  animating=true; render(); $("youwon").classList.add("hidden");
+  const pool=(r.pool&&r.pool.length)?r.pool:["Nº "+r.num];
+  const drum=$("drum"); drum.className="drum spin";
+  let t=0,delay=50,i=0;
+  (function tick(){ drum.textContent=pool[i++%pool.length]; t+=delay; delay*=1.07; if(t<3800) setTimeout(tick,delay); else { animating=false; render(); confetti(); } })();
+}
+function confetti(){
+  const c=["#facc15","#22c55e","#60a5fa","#f472b6","#f97316"];
+  for(let i=0;i<110;i++){const e=document.createElement("div");e.className="confetti";e.style.left=Math.random()*100+"vw";e.style.background=c[i%c.length];e.style.animationDuration=(2+Math.random()*2.5)+"s";e.style.animationDelay=(Math.random()*.6)+"s";document.body.append(e);setTimeout(()=>e.remove(),5500);}
+}
+
+// ---- estado compartilhado (ntfy.sh) ----
+function applyState(s){
+  if(!s || typeof s!=="object" || !Array.isArray(s.presentes)) return;
+  if((s.ts||0) < (estado.ts||0)) return;
+  estado={ presentes:s.presentes.filter(p=>p&&p.n>=1&&p.n<=TOTAL).map(p=>({n:p.n,nome:clean(p.nome)})), resultado:s.resultado||null, ts:s.ts||0, resetAt:s.resetAt||0 };
+  const id=estado.resultado?estado.resultado.drawId:null;
+  if(lastDrawId!==undefined && id && id!==lastDrawId && !animating) animate(estado.resultado);
+  lastDrawId=id;
+  render();
+}
+async function pollLast(topic){
+  const r=await fetch(BASE+topic+"/json?poll=1&since=all"); const txt=await r.text();
+  return txt.split("\n").filter(Boolean).map(l=>{try{return JSON.parse(l);}catch(e){return null;}}).filter(m=>m&&m.event==="message");
+}
+function listen(topic, onMsg){
+  let es; let lastId=null;
+  const open=()=>{
+    es=new EventSource(BASE+topic+"/sse"+(lastId?("?since="+lastId):""));
+    es.onopen=()=>setConn(true);
+    es.onmessage=e=>{ try{ const m=JSON.parse(e.data); if(m.event==="message"){ lastId=m.id; onMsg(m); } }catch(err){} };
+    es.onerror=()=>{ setConn(false); };
+  };
+  open();
+}
+const post=(topic,obj)=>fetch(BASE+topic,{method:"POST",body:JSON.stringify(obj)});
+
+// ---- organizador ----
+let pubTimer=null;
+function publish(){
+  clearTimeout(pubTimer);
+  pubTimer=setTimeout(()=>{ estado.ts=Date.now(); post(T_ST,estado).catch(()=>{ $("hMsg").className="msg err"; $("hMsg").textContent="Falha de conexão. Tente de novo."; }); },150);
+}
+function addPresente(k,nome,msgTime){
+  if(!loaded) return "wait";
+  const n=numOf(k); if(!n) return "inv";
+  if(msgTime && msgTime*1000 < (estado.resetAt||0)) return "old";
+  const p=estado.presentes.find(x=>x.n===n);
+  if(p){ if(nome && !p.nome){ p.nome=clean(nome); render(); publish(); } return "dup"; }
+  estado.presentes.push({n, nome:clean(nome)}); render(); publish(); return "ok";
+}
+function rand(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0];}while(x>=lim);return x%n;}
+
+$("hostForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const r=addPresente($("hKey").value,$("hName").value), m=$("hMsg");
+  if(r==="ok"){ m.className="msg ok"; m.textContent="Adicionado ✔"; $("hKey").value=""; $("hName").value=""; }
+  else { m.className="msg err"; m.textContent = r==="dup"?"Essa pessoa já está na sala.": r==="wait"?"Aguarde conectar.":"Chave inválida."; }
+});
+$("go").addEventListener("click",()=>{
+  const pres=estado.presentes; if(pres.length<2||animating) return;
+  const w=pres[rand(pres.length)];
+  const r={ num:w.n, nome:w.nome||"", pool:pres.map(p=>"Nº "+p.n+" · "+(p.nome||("Participante "+p.n))), drawId:Date.now()+"-"+rand(1e6) };
+  lastDrawId=r.drawId; estado.resultado=r; animate(r); publish();
+});
+let pending=null;
+$("reset").addEventListener("click",()=>{ pending="res"; $("mText").textContent="Apagar o resultado do sorteio?"; $("modal").classList.add("show"); });
+$("resetAll").addEventListener("click",()=>{ pending="all"; $("mText").textContent="Tirar todos da sala e apagar o resultado?"; $("modal").classList.add("show"); });
+$("no").addEventListener("click",()=>$("modal").classList.remove("show"));
+$("yes").addEventListener("click",()=>{ $("modal").classList.remove("show"); estado.resultado=null; if(pending==="all"){ estado.presentes=[]; estado.resetAt=Date.now(); } render(); publish(); });
+
+// ---- participante ----
+let retry=null;
+function checkIn(){ if(me && !isHost) post(T_IN,{k:me.k,nome:me.nome}).catch(()=>{}); }
+$("gateForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const k=norm($("gKey").value), n=numOf(k), nome=clean($("gName").value);
+  if(!n){ $("gMsg").className="msg err"; $("gMsg").textContent="Chave inválida. Confira e tente de novo."; return; }
+  me={k,nome,n}; ls.set("s100_me",JSON.stringify({k,nome}));
+  showRoom(); checkIn();
+});
+
+// ---- início ----
+(async()=>{
+  if(isHost||me) showRoom();
+  try{ const ms=await pollLast(T_ST); ms.forEach(m=>{ try{ applyState(JSON.parse(m.message)); }catch(e){} }); setConn(true); }
+  catch(e){ setConn(false); }
+  loaded=true; if(lastDrawId===undefined) lastDrawId = estado.resultado?estado.resultado.drawId:null;
+  render();
+  if(!isHost) listen(T_ST, m=>{ try{ applyState(JSON.parse(m.message)); }catch(e){} });
+
+  if(isHost){
+    const handle=m=>{ try{ const d=JSON.parse(m.message); if(d&&d.k) addPresente(d.k,d.nome,m.time); }catch(e){} };
+    try{ (await pollLast(T_IN)).forEach(handle); }catch(e){}
+    listen(T_IN, handle);
+  } else {
+    // reenvia a entrada até aparecer na lista (caso o organizador ainda não esteja online)
+    retry=setInterval(()=>{ if(me && !isIn(me.n)) checkIn(); },15000);
+    if(me && !isIn(me.n)) checkIn();
+  }
+})();
+</script>
+</body>
+</html>
