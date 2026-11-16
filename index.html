@@ -138,6 +138,8 @@
 const HASHES = ["26y0jdgj9sv","1bslhdr99gx","1pae7qkz8j0","zkegqt7e78","1huozum7g1n","2d9qdraxdsj","1q5bd8t91dw","1bxfzgslzbj","1nxam3n5svx","24c1ys1thhp","1yoaw86k476","2a5deqlsj1e","22fxiamixmn"];
 const ORGH = "6nbodag8w";
 const TOTAL = HASHES.length;
+const OFICIAL_V = "oficial-1";
+const OFICIAL = [[3,"aeufafao"],[4,"cauaav94"],[5,"eliasecv37"],[6,"enrico20ns"],[7,"jpalcantara014"],[8,"jumaislane"],[9,"lucasalves.bh140710"],[10,"martinssamuelrocha"],[11,"matheusmlopes2024"],[12,"silvagomesbernardo66"]];
 const BASE = "https://ntfy.sh/";
 const T_IN = "sorteio100-qrmkgdelc9upi4-in";
 const T_ST = "sorteio100-qrmkgdelc9upi4-st";
@@ -202,8 +204,8 @@ function render(){
 function showRoom(){
   $("gate").classList.add("hidden"); $("room").classList.remove("hidden");
   if(isHost){
-    $("sub").textContent="Você é o organizador. Os participantes acompanham tudo ao vivo.";
-    $("hostPanel").classList.remove("hidden"); $("hostDraw").classList.remove("hidden");
+    $("sub").textContent="Sorteio ao vivo.";
+    $("hostDraw").classList.remove("hidden");
   } else {
     $("sub").textContent="Acompanhe ao vivo. O resultado aparece aqui para todos.";
     $("meCard").classList.remove("hidden"); $("myNum").textContent="Nº "+me.n; $("myName").textContent=me.nome;
@@ -228,7 +230,7 @@ function confetti(){
 function applyState(s){
   if(!s || typeof s!=="object" || !Array.isArray(s.presentes)) return;
   if((s.ts||0) < (estado.ts||0)) return;
-  estado={ presentes:s.presentes.filter(p=>p&&p.n>=1&&p.n<=TOTAL).map(p=>({n:p.n,nome:clean(p.nome)})), resultado:s.resultado||null, ts:s.ts||0, resetAt:s.resetAt||0 };
+  estado={ presentes:s.presentes.filter(p=>p&&p.n>=1&&p.n<=TOTAL).map(p=>({n:p.n,nome:clean(p.nome)})), resultado:s.resultado||null, ts:s.ts||0, resetAt:s.resetAt||0, v:s.v||"" };
   const id=estado.resultado?estado.resultado.drawId:null;
   if(lastDrawId!==undefined && id && id!==lastDrawId && !animating) animate(estado.resultado);
   lastDrawId=id;
@@ -304,6 +306,10 @@ $("gateForm").addEventListener("submit",e=>{
   render();
   if(!isHost) listen(T_ST, m=>{ try{ applyState(JSON.parse(m.message)); }catch(e){} });
 
+  if(isHost && estado.v!==OFICIAL_V){
+    estado.presentes=OFICIAL.map(([n,nome])=>({n,nome})); estado.resultado=null; estado.resetAt=Date.now(); estado.v=OFICIAL_V;
+    lastDrawId=null; render(); publish();
+  }
   if(isHost){
     const handle=m=>{ try{ const d=JSON.parse(m.message); if(d&&d.k) addPresente(d.k,d.nome,m.time); }catch(e){} };
     try{ (await pollLast(T_IN)).forEach(handle); }catch(e){}
