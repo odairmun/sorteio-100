@@ -108,6 +108,7 @@
       <div class="t">🏆 Resultado do sorteio 🏆</div>
       <div class="w" id="bName"></div>
       <div class="s" id="bSub"></div>
+      <div class="s" id="bWhen" style="margin-top:8px;font-size:14px;opacity:.85"></div>
     </div>
 
     <section class="card">
@@ -198,7 +199,7 @@ function render(){
     else { $("drum").textContent="Aguardando o sorteio…"; $("drum").className="drum"; $("go").textContent="Sortear agora"; }
     $("youwon").classList.toggle("hidden", !(r && me && r.num===me.n));
     $("banner").classList.toggle("hidden", !r);
-    if(r){ $("bName").textContent=(r.nome||("Participante "+r.num)); $("bSub").textContent = (me && r.num===me.n) ? "🎉 É VOCÊ! Parabéns! 🎉" : "Ganhou os R$ 100! Parabéns! 🎉"; }
+    if(r){ const at=r.at||parseInt(String(r.drawId||"").split("-")[0],10); $("bWhen").textContent = at ? ("📅 Sorteio realizado em "+new Date(at).toLocaleDateString("pt-BR",{timeZone:"America/Sao_Paulo",weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+" às "+new Date(at).toLocaleTimeString("pt-BR",{timeZone:"America/Sao_Paulo",hour:"2-digit",minute:"2-digit"})) : ""; $("bName").textContent=(r.nome||("Participante "+r.num)); $("bSub").textContent = (me && r.num===me.n) ? "🎉 É VOCÊ! Parabéns! 🎉" : "Ganhou os R$ 100! Parabéns! 🎉"; }
   }
 }
 function showRoom(){
@@ -277,7 +278,7 @@ $("hostForm").addEventListener("submit",e=>{
 $("go").addEventListener("click",()=>{
   const pres=estado.presentes; if(pres.length<1||animating) return;
   const w=pres[rand(pres.length)];
-  const r={ num:w.n, nome:w.nome||"", pool:pres.map(p=>"Nº "+p.n+" · "+(p.nome||("Participante "+p.n))), drawId:Date.now()+"-"+rand(1e6) };
+  const r={ at:Date.now(), num:w.n, nome:w.nome||"", pool:pres.map(p=>"Nº "+p.n+" · "+(p.nome||("Participante "+p.n))), drawId:Date.now()+"-"+rand(1e6) };
   lastDrawId=r.drawId; estado.resultado=r; animate(r); publish();
 });
 let pending=null;
